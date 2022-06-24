@@ -20,7 +20,7 @@ const producer = async (event, context) => {
   const queueName = "receiverQueue";
 
   const queueUrl = `https://sqs.${region}.amazonaws.com/${accountId}/${queueName}`;
-
+  const NUM_OF_RETRIES = 5;
   try {
     await sqs
       .sendMessage({

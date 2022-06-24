@@ -28,9 +28,22 @@ functions:
             Fn::GetAtt:
               - receiverQueue
               - Arn
+  # receiverError:
+  #   handler: handler.DLQ
+  #   events:
+  #     - sqs:
+  #         arn:
+  #           Fn::GetAtt:
+  #             - MyQueue
+  #             - Arn
+  #     - batchSize: 1 # defaul
 resources:
   Resources:
     receiverQueue:
       Type: AWS::SQS::Queue
       Properties:
         QueueName: receiverQueue
+        # RedrivePolicy:
+        #   deadLetterTargetArn:
+        #     "Fn::GetAtt":
+        #       - Arn
