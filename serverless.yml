@@ -1,0 +1,36 @@
+service: sqs
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - sqs:SendMessage
+          Resource:
+            - Fn::GetAtt: [receiverQueue, Arn]
+functions:
+  producer:
+    handler: handler.producer
+    events:
+      - http:
+          method: post
+          path: producer
+
+  consumer:
+    handler: handler.consumer
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - receiverQueue
+              - Arn
+resources:
+  Resources:
+    receiverQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: receiverQueue
