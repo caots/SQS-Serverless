@@ -62,7 +62,7 @@ _Note_: In current form, after deployment, your API is public and can be invoked
 After successful deployment, you can now call the created API endpoint with `POST` request to invoke `producer` function:
 
 ```bash
-curl --request POST 'https://xxxxxx.execute-api.us-east-1.amazonaws.com/produce' --header 'Content-Type: application/json' --data-raw '{"name": "John"}'
+curl --request POST 'https://d3bw6c8udb.execute-api.us-east-1.amazonaws.com/dev/producer' --header 'Content-Type: application/json' --data-raw '{"name": "John"}'
 ```
 
 In response, you should see output similar to:

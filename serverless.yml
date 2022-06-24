@@ -8,10 +8,16 @@ provider:
     role:
       statements:
         - Effect: Allow
+          Principal:
+            Service: "sns.amazonaws.com"
           Action:
             - sqs:SendMessage
           Resource:
             - Fn::GetAtt: [receiverQueue, Arn]
+          Condition:
+            ArnEquals:
+              aws:SourceArn: "arn:aws:sns:us-east-1:706512677771:Topic-response"
+
 functions:
   producer:
     handler: handler.producer
@@ -43,7 +49,3 @@ resources:
       Type: AWS::SQS::Queue
       Properties:
         QueueName: receiverQueue
-        # RedrivePolicy:
-        #   deadLetterTargetArn:
-        #     "Fn::GetAtt":
-        #       - Arn
