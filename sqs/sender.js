@@ -45,6 +45,7 @@ const producer = async (event, context) => {
     statusCode,
     body: JSON.stringify({
       message,
+      queueUrl
     }),
   };
 };
