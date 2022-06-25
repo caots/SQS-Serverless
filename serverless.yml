@@ -4,25 +4,42 @@ frameworkVersion: "3"
 provider:
   name: aws
   runtime: nodejs12.x
-  iam:
-    role:
-      statements:
-        - Effect: Allow
-          Action:
-            - sqs:SendMessage
-          Resource:
-            - Fn::GetAtt: [receiverQueue, Arn]
-          # Condition:
-          #   ArnEquals:
-          #     aws:SourceArn: "arn:aws:sns:us-east-1:706512677771:Topic-response"
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - sqs:SendMessage
+        - dynamodb:DescribeTable
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+      Resource:
+        "*"
+        # - Fn::GetAtt: [receiverQueue, Arn]
+     # allow sending to dead-letter queue
+    - Sid: LambdaDLQPermissions
+      Effect: Allow
+      Action:
+        - "sqs:SendMessage"
+      Resource:
+        - "Fn::GetAtt":
+          - ReceiverDeadLetterQueue
+          - Arn
 
 functions:
   producer:
-    handler: handler.producer
+    handler: handler.RawMessagePersister
     events:
       - http:
           method: post
           path: producer
+
+  # receiverHandlerError:
+  #   handler: handler.receiverErrorHandling
+  #   events:
+  #     - sqs:
+  #         arn:
+  #           Fn::GetAtt:
+  #             - receiverQueue
+  #             - Arn
 
   consumer:
     handler: handler.consumer
@@ -32,18 +49,25 @@ functions:
             Fn::GetAtt:
               - receiverQueue
               - Arn
-  # receiverError:
-  #   handler: handler.DLQ
-  #   events:
-  #     - sqs:
-  #         arn:
-  #           Fn::GetAtt:
-  #             - MyQueue
-  #             - Arn
-  #     - batchSize: 1 # defaul
 resources:
   Resources:
     receiverQueue:
       Type: AWS::SQS::Queue
       Properties:
         QueueName: receiverQueue
+        VisibilityTimeout: 30 # 30 sec.
+        MessageRetentionPeriod: 60 # 60 sec.
+        RedrivePolicy:
+          deadLetterTargetArn:
+            "Fn::GetAtt":
+              - ReceiverDeadLetterQueue
+              - Arn
+          maxReceiveCount: 1
+    ReceiverDeadLetterQueue:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        QueueName: "receiverDLQ"
+        MessageRetentionPeriod: 1209600 # 14 days in seconds
+    
+
+   

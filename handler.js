@@ -1,7 +1,7 @@
 "use strict";
-const { producer } = require("./sqs/sender");
-const { consumer } = require("./sqs/receiver");
-const { DLQ } = require("./sqs/DLQ");
-module.exports = { producer, consumer, DLQ };
+const { RawMessagePersister } = require("./src/RawMessagePersister");
+const { consumer } = require("./src/receiver");
+const { receiverErrorHandling } = require("./src/receiverErrorHandling");
+module.exports = { RawMessagePersister, consumer, receiverErrorHandling };
 
 // check log: serverless logs -f receiver
