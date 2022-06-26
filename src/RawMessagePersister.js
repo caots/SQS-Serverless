@@ -1,6 +1,7 @@
 const { SQS } = require("aws-sdk");
 const sqs = new SQS();
 const configDb = require("../config/db");
+const uuid  = require("uuid");
 
 const saveRawMessageSuccess = async (message) => {
   await configDb.db
@@ -19,7 +20,7 @@ const RawMessagePersister = async (event, context) => {
   let statusCode = 200;
   let message;
   const bodyData = JSON.parse(event.body);
-  let errorMessage = true;
+  let errorMessage = bodyData.errorMessage;
   if (!event.body) {
     return {
       statusCode: 400,
@@ -30,10 +31,11 @@ const RawMessagePersister = async (event, context) => {
   if (!errorMessage) {
     // save data message to DB
     const messageBody = {
-      id: bodyData.idMessage,
+      id: uuid.v4(),
       content: "body message",
       status: "inprogress",
     };
+    console.log('messageBody: ', messageBody)
     return saveRawMessageSuccess(messageBody);
   }
   // push message to Error Queue
